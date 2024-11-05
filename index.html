@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Playlist Manager</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Music Playlist Manager</h1>
+      <div>
+        <input
+          type="text"
+          id="playlistName"
+          placeholder="Enter Playlist Name"
+        />
+        <button id="createPlaylistButton">Create Playlist</button>
+      </div>
+
+      <div>
+        <input type="text" id="songName" placeholder="Enter Song Name" />
+        <input
+          type="text"
+          id="playlistForSong"
+          placeholder="Enter Playlist Name"
+        />
+        <button id="addSongButton">Add Song to Playlist</button>
+      </div>
+
+      <div>
+        <input
+          type="text"
+          id="displayPlaylistName"
+          placeholder="Enter Playlist Name"
+        />
+        <button id="displayPlaylistButton">Show Playlist</button>
+        <pre id="playlistOutput">No playlist yet.</pre>
+      </div>
+
+      <div>
+        <input
+          type="text"
+          id="playSongPlaylistName"
+          placeholder="Enter Playlist Name"
+        />
+        <button id="playSongButton">Play Next Song</button>
+        <p id="nowPlaying">Nothing playing.</p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- WebAssembly Compiled JS file:
+    <script src="playlist_manager.js"></script>-->
+  </body>
+</html>
