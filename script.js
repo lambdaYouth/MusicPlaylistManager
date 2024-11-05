@@ -1,7 +1,6 @@
 const MAX_PLAYLISTS = 10;
 const MAX_SONGS = 10;
 
-// Linked list node class for Playlist
 class PlaylistNode {
   constructor(playlist) {
     this.playlist = playlist;
@@ -9,14 +8,12 @@ class PlaylistNode {
   }
 }
 
-// Playlist class (each playlist holds songs in an array)
 class Playlist {
   constructor(name) {
     this.name = name;
     this.songs = [];
   }
 
-  // Add a song to the playlist (queue behavior for song addition)
   addSong(songName) {
     if (this.songs.length < MAX_SONGS) {
       this.songs.push(songName);
@@ -25,7 +22,6 @@ class Playlist {
     }
   }
 
-  // Display all songs in the playlist
   displaySongs() {
     if (this.songs.length === 0) {
       return "No songs in this playlist.";
@@ -33,23 +29,20 @@ class Playlist {
     return `Songs:\n${this.songs.join("\n")}`;
   }
 
-  // Play the next song using queue behavior (FIFO)
   playNextSong() {
     if (this.songs.length === 0) {
       return "No songs available.";
     }
-    return this.songs.shift(); // Remove and return the first song
+    return this.songs.shift();
   }
 }
 
-// Linked list for managing playlists
 class PlaylistManager {
   constructor() {
     this.head = null;
     this.playlistCount = 0;
   }
-
-  // Add a new playlist to the linked list
+  
   addPlaylist(playlist) {
     if (this.playlistCount < MAX_PLAYLISTS) {
       const newNode = new PlaylistNode(playlist);
@@ -69,7 +62,6 @@ class PlaylistManager {
     }
   }
 
-  // Find a playlist by name
   findPlaylist(playlistName) {
     let current = this.head;
     while (current) {
@@ -82,7 +74,7 @@ class PlaylistManager {
   }
 }
 
-const playlistManager = new PlaylistManager(); // Instantiate the PlaylistManager (linked list)
+const playlistManager = new PlaylistManager();
 
 function createPlaylist() {
   const playlistName = document.getElementById("playlistName").value;
