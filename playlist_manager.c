@@ -87,3 +87,29 @@ char *playNextSong(const char *playlistName)
 
     return output;
 }
+
+EMSCRIPTEN_KEEPALIVE
+void deleteSongFromPlaylist(const char *playlistName, const char *songName)
+{
+    for (int i = 0; i < playlistCount; i++)
+    {
+        if (strcmp(playlists[i].name, playlistName) == 0)
+        {
+            for (int j = 0; j < playlists[i].songCount; j++)
+            {
+                if (strcmp(playlists[i].songs[j], songName) == 0)
+                {
+                    // Shift all songs after the deleted one
+                    for (int k = j; k < playlists[i].songCount - 1; k++)
+                    {
+                        strcpy(playlists[i].songs[k], playlists[i].songs[k + 1]);
+                    }
+                    playlists[i].songCount--;
+                    return;
+                }
+            }
+            break;
+        }
+    }
+}
+
