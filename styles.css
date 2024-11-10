@@ -35,3 +35,15 @@ button:hover {
     background-color: #1784F1;
     color: white;
 }
+button.delete {
+    background-color: #ff4747;  /* Red color for delete */
+    color: white;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button.delete:hover {
+    background-color: #e03e3e;  /* Darker red when hovered */
+}
