@@ -7,4 +7,5 @@ Working:
 1. Create a playlist by entering a playlist name.
 2. Add songs to an existing playlist.
 3. View all songs in a playlist.
-4. Play the next song in the playlist.
+4. Delete a song in a playlist
+5. Play the next song in the playlist.
