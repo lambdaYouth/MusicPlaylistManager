@@ -1,114 +1,133 @@
-#include <emscripten.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define MAX_PLAYLISTS 10
-#define MAX_SONGS 10
 #define MAX_NAME_LENGTH 50
 
+// Binary Search Tree Node for storing songs
+typedef struct SongNode
+{
+    char name[MAX_NAME_LENGTH];
+    struct SongNode *left;
+    struct SongNode *right;
+} SongNode;
+
+// Hash Map entry for Playlists
 typedef struct
 {
     char name[MAX_NAME_LENGTH];
-    char songs[MAX_SONGS][MAX_NAME_LENGTH];
-    int songCount;
+    SongNode *songs;
 } Playlist;
 
-Playlist playlists[MAX_PLAYLISTS];
+// Hash Map for storing playlists
+Playlist *playlists[MAX_PLAYLISTS];
 int playlistCount = 0;
 
-EMSCRIPTEN_KEEPALIVE
+// Utility function to create a new SongNode for the BST
+SongNode *createSongNode(const char *songName)
+{
+    SongNode *newNode = (SongNode *)malloc(sizeof(SongNode));
+    strncpy(newNode->name, songName, MAX_NAME_LENGTH);
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Insert a song into the BST (Binary Search Tree)
+SongNode *insertSong(SongNode *root, const char *songName)
+{
+    if (root == NULL)
+    {
+        return createSongNode(songName);
+    }
+    if (strcmp(songName, root->name) < 0)
+    {
+        root->left = insertSong(root->left, songName);
+    }
+    else
+    {
+        root->right = insertSong(root->right, songName);
+    }
+    return root;
+}
+
+// Inorder traversal to display songs in sorted order
+void displaySongsInOrder(SongNode *root)
+{
+    if (root != NULL)
+    {
+        displaySongsInOrder(root->left);
+        printf("%s\n", root->name);
+        displaySongsInOrder(root->right);
+    }
+}
+
+// Hash function to find index for playlist
+int hashFunction(const char *name)
+{
+    int sum = 0;
+    for (int i = 0; name[i] != '\0'; i++)
+    {
+        sum += name[i];
+    }
+    return sum % MAX_PLAYLISTS;
+}
+
+// Create a new playlist and add to Hash Map
 void createPlaylist(const char *name)
 {
     if (playlistCount < MAX_PLAYLISTS)
     {
-        strncpy(playlists[playlistCount].name, name, MAX_NAME_LENGTH);
-        playlists[playlistCount].songCount = 0;
+        int index = hashFunction(name);
+        playlists[index] = (Playlist *)malloc(sizeof(Playlist));
+        strncpy(playlists[index]->name, name, MAX_NAME_LENGTH);
+        playlists[index]->songs = NULL;
         playlistCount++;
     }
+    else
+    {
+        printf("Maximum playlist limit reached.\n");
+    }
 }
 
-EMSCRIPTEN_KEEPALIVE
+// Add a song to the specified playlist using Hash Map and BST
 void addSongToPlaylist(const char *playlistName, const char *songName)
 {
-    for (int i = 0; i < playlistCount; i++)
+    int index = hashFunction(playlistName);
+    if (playlists[index] != NULL && strcmp(playlists[index]->name, playlistName) == 0)
     {
-        if (strcmp(playlists[i].name, playlistName) == 0)
-        {
-            if (playlists[i].songCount < MAX_SONGS)
-            {
-                strncpy(playlists[i].songs[playlists[i].songCount], songName, MAX_NAME_LENGTH);
-                playlists[i].songCount++;
-            }
-            break;
-        }
+        playlists[index]->songs = insertSong(playlists[index]->songs, songName);
+    }
+    else
+    {
+        printf("Playlist not found.\n");
     }
 }
 
-EMSCRIPTEN_KEEPALIVE
-char *displayPlaylist(const char *playlistName)
+// Display playlist's songs in sorted order
+void displayPlaylist(const char *playlistName)
 {
-    static char output[256];
-    strcpy(output, "Playlist not found.");
-
-    for (int i = 0; i < playlistCount; i++)
+    int index = hashFunction(playlistName);
+    if (playlists[index] != NULL && strcmp(playlists[index]->name, playlistName) == 0)
     {
-        if (strcmp(playlists[i].name, playlistName) == 0)
-        {
-            strcpy(output, "Songs:\n");
-            for (int j = 0; j < playlists[i].songCount; j++)
-            {
-                strcat(output, playlists[i].songs[j]);
-                strcat(output, "\n");
-            }
-            break;
-        }
+        printf("Songs in playlist '%s':\n", playlistName);
+        displaySongsInOrder(playlists[index]->songs);
     }
-
-    return output;
+    else
+    {
+        printf("Playlist not found.\n");
+    }
 }
 
-EMSCRIPTEN_KEEPALIVE
-char *playNextSong(const char *playlistName)
+// Example usage
+int main()
 {
-    static char output[256];
-    strcpy(output, "No songs available.");
+    createPlaylist("Rock");
+    addSongToPlaylist("Rock", "Bohemian Rhapsody");
+    addSongToPlaylist("Rock", "Hotel California");
+    addSongToPlaylist("Rock", "Stairway to Heaven");
 
-    for (int i = 0; i < playlistCount; i++)
-    {
-        if (strcmp(playlists[i].name, playlistName) == 0)
-        {
-            if (playlists[i].songCount > 0)
-            {
-                strncpy(output, playlists[i].songs[0], MAX_NAME_LENGTH);
-                break;
-            }
-        }
-    }
+    displayPlaylist("Rock");
 
-    return output;
-}
-
-EMSCRIPTEN_KEEPALIVE
-void deleteSongFromPlaylist(const char *playlistName, const char *songName)
-{
-    for (int i = 0; i < playlistCount; i++)
-    {
-        if (strcmp(playlists[i].name, playlistName) == 0)
-        {
-            for (int j = 0; j < playlists[i].songCount; j++)
-            {
-                if (strcmp(playlists[i].songs[j], songName) == 0)
-                {
-                    // Shift all songs after the deleted one
-                    for (int k = j; k < playlists[i].songCount - 1; k++)
-                    {
-                        strcpy(playlists[i].songs[k], playlists[i].songs[k + 1]);
-                    }
-                    playlists[i].songCount--;
-                    return;
-                }
-            }
-            break;
-        }
-    }
+    return 0;
 }
