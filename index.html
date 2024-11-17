@@ -37,33 +37,32 @@
         <button id="displayPlaylistButton">Show Playlist</button>
         <pre id="playlistOutput">No playlist yet.</pre>
       </div>
+
       <div>
         <input
           type="text"
-          id="deleteSongPlaylistName"
-          placeholder="Enter Playlist Name"
+          id="sortPlaylistName"
+          placeholder="Enter Playlist Name to Sort"
         />
-        <input
-          type="text"
-          id="deleteSongName"
-          placeholder="Enter Song Name"
-        />
-        <button id="deleteSongButton">Delete Song from Playlist</button>
+        <button id="sortPlaylistButton">Sort Playlist</button>
       </div>
+
       <div>
         <input
           type="text"
-          id="playSongPlaylistName"
+          id="searchPlaylistName"
           placeholder="Enter Playlist Name"
         />
-        <button id="playSongButton">Play Next Song</button>
-        <p id="nowPlaying">Nothing playing.</p>
-      </div>      
+        <input
+          type="text"
+          id="searchSongName"
+          placeholder="Enter Song Name to Search"
+        />
+        <button id="searchSongButton">Search Song</button>
+        <p id="searchSongResult">Search result will appear here.</p>
+      </div>
     </div>
 
     <script src="script.js"></script>
-
-    <!-- WebAssembly Compiled JS file:
-    <script src="playlist_manager.js"></script>-->
   </body>
 </html>

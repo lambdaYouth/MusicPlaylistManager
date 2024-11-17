@@ -1,105 +1,170 @@
 const MAX_PLAYLISTS = 10;
-const MAX_SONGS = 10;
 
-// Linked list node class for Playlist
-class PlaylistNode {
-  constructor(playlist) {
-    this.playlist = playlist;
-    this.next = null;
+// Binary Search Tree Node class for storing songs
+class SongNode {
+  constructor(name) {
+    this.name = name;
+    this.left = null;
+    this.right = null;
   }
 }
 
-// Playlist class (each playlist holds songs in an array)
+// Binary Search Tree class for managing song insertion and sorting
+class SongBST {
+  constructor() {
+    this.root = null;
+  }
+
+  // Insert a new song into the BST
+  insert(name) {
+    const newNode = new SongNode(name);
+    if (this.root === null) {
+      this.root = newNode;
+    } else {
+      this._insertNode(this.root, newNode);
+    }
+  }
+
+  _insertNode(node, newNode) {
+    if (newNode.name < node.name) {
+      if (node.left === null) {
+        node.left = newNode;
+      } else {
+        this._insertNode(node.left, newNode);
+      }
+    } else {
+      if (node.right === null) {
+        node.right = newNode;
+      } else {
+        this._insertNode(node.right, newNode);
+      }
+    }
+  }
+
+  // In-order traversal to display songs in sorted order
+  inOrderTraversal(node, songs = []) {
+    if (node !== null) {
+      this.inOrderTraversal(node.left, songs);
+      songs.push(node.name);
+      this.inOrderTraversal(node.right, songs);
+    }
+    return songs;
+  }
+
+  // Return the songs in sorted order
+  getSongsInOrder() {
+    return this.inOrderTraversal(this.root);
+  }
+}
+
+// Playlist class (each playlist holds songs in a BST and an insertion list)
 class Playlist {
   constructor(name) {
     this.name = name;
-    this.songs = [];
+    this.songs = new SongBST();  // Songs are stored in a BST
+    this.songInsertionOrder = [];  // Keep track of the insertion order
   }
 
-  // Add a song to the playlist (queue behavior for song addition)
+  // Add a song to the playlist
   addSong(songName) {
-    if (this.songs.length < MAX_SONGS) {
-      this.songs.push(songName);
-    } else {
-      return "Playlist is full.";
-    }
+    this.songs.insert(songName);  // Insert in BST for sorted display
+    this.songInsertionOrder.push(songName);  // Also add to insertion order
   }
 
-  // Display all songs in the playlist
-  displaySongs() {
-    if (this.songs.length === 0) {
+  // Display songs in insertion order
+  displaySongsInOriginalOrder() {
+    if (this.songInsertionOrder.length === 0) {
       return "No songs in this playlist.";
     }
-    return `Songs:\n${this.songs.join("\n")}`;
+    return `Songs in original order:\n${this.songInsertionOrder.join("\n")}`;
   }
 
-  // Play the next song using queue behavior (FIFO)
-  playNextSong() {
-    if (this.songs.length === 0) {
-      return "No songs available.";
+  // Display songs in sorted order
+  displaySongsInSortedOrder() {
+    const songList = this.songs.getSongsInOrder();
+    if (songList.length === 0) {
+      return "No songs in this playlist.";
     }
-    return this.songs.shift(); // Remove and return the first song
-  }
-  deleteSong(songName) {
-    const songIndex = this.songs.indexOf(songName);
-    if (songIndex > -1) {
-      this.songs.splice(songIndex, 1);
-      return null; 
-    }
-    return `Song "${songName}" not found in playlist.`;
+    return `Songs in sorted order:\n${songList.join("\n")}`;
   }
 }
 
-// Linked list for managing playlists
-class PlaylistManager {
-  constructor() {
-    this.head = null;
-    this.playlistCount = 0;
-  }
+// Hash map (object) for managing playlists
+const playlists = {};
+let playlistCount = 0;
 
-  // Add a new playlist to the linked list
-  addPlaylist(playlist) {
-    if (this.playlistCount < MAX_PLAYLISTS) {
-      const newNode = new PlaylistNode(playlist);
-      if (!this.head) {
-        this.head = newNode;
-      } else {
-        let current = this.head;
-        while (current.next) {
-          current = current.next;
-        }
-        current.next = newNode;
-      }
-      this.playlistCount++;
-      return `Playlist "${playlist.name}" created successfully!`;
+// Create a new playlist and add it to the hash map
+function createPlaylist(playlistName) {
+  if (playlistCount < MAX_PLAYLISTS) {
+    if (!playlists[playlistName]) {
+      playlists[playlistName] = new Playlist(playlistName);
+      playlistCount++;
+      return `Playlist "${playlistName}" created successfully!`;
     } else {
-      return "Maximum number of playlists reached.";
+      return `Playlist "${playlistName}" already exists.`;
     }
+  } else {
+    return "Maximum number of playlists reached.";
   }
-
-  // Find a playlist by name
-  findPlaylist(playlistName) {
-    let current = this.head;
-    while (current) {
-      if (current.playlist.name === playlistName) {
-        return current.playlist;
-      }
-      current = current.next;
-    }
-    return null;
-  }
-  
 }
 
-const playlistManager = new PlaylistManager(); // Instantiate the PlaylistManager (linked list)
+// Find a playlist by name
+function findPlaylist(playlistName) {
+  return playlists[playlistName] || null;
+}
 
-function createPlaylist() {
+// Display playlist's songs in their original insertion order
+function displayPlaylist(playlistName) {
+  const playlist = findPlaylist(playlistName);
+  if (playlist) {
+    return playlist.displaySongsInOriginalOrder();
+  } else {
+    return `Playlist "${playlistName}" not found.`;
+  }
+}
+
+// Display playlist's songs in sorted order
+function sortPlaylist(playlistName) {
+  const playlist = findPlaylist(playlistName);
+  if (playlist) {
+    return playlist.displaySongsInSortedOrder();
+  } else {
+    return `Playlist "${playlistName}" not found.`;
+  }
+}
+
+// Add a song to a specific playlist
+function addSongToPlaylist(playlistName, songName) {
+  const playlist = findPlaylist(playlistName);
+  if (playlist) {
+    playlist.addSong(songName);
+    return `Song "${songName}" added to playlist "${playlistName}".`;
+  } else {
+    return `Playlist "${playlistName}" not found.`;
+  }
+}
+
+// Sort the songs in the playlist (triggered by "Sort Playlist" button)
+function sortPlaylistUI() {
+  const playlistName = document.getElementById("sortPlaylistName").value;
+  const playlistOutput = document.getElementById("playlistOutput");
+
+  if (playlistName) {
+    const result = sortPlaylist(playlistName);
+    playlistOutput.innerText = result;
+    document.getElementById("sortPlaylistName").value = "";
+  } else {
+    playlistOutput.innerText = "Playlist name cannot be empty.";
+  }
+}
+
+// Example usage
+function createPlaylistUI() {
   const playlistName = document.getElementById("playlistName").value;
   const playlistOutput = document.getElementById("playlistOutput");
 
   if (playlistName) {
-    const newPlaylist = new Playlist(playlistName);
-    const result = playlistManager.addPlaylist(newPlaylist);
+    const result = createPlaylist(playlistName);
     playlistOutput.innerText = result;
     document.getElementById("playlistName").value = "";
   } else {
@@ -107,21 +172,14 @@ function createPlaylist() {
   }
 }
 
-function addSong() {
+function addSongUI() {
   const playlistName = document.getElementById("playlistForSong").value;
   const songName = document.getElementById("songName").value;
   const playlistOutput = document.getElementById("playlistOutput");
 
   if (playlistName && songName) {
-    const playlist = playlistManager.findPlaylist(playlistName);
-    if (playlist) {
-      const result = playlist.addSong(songName);
-      playlistOutput.innerText = result
-        ? result
-        : `Song "${songName}" added to playlist "${playlistName}".`;
-    } else {
-      playlistOutput.innerText = `Playlist "${playlistName}" not found.`;
-    }
+    const result = addSongToPlaylist(playlistName, songName);
+    playlistOutput.innerText = result;
     document.getElementById("playlistForSong").value = "";
     document.getElementById("songName").value = "";
   } else {
@@ -129,63 +187,53 @@ function addSong() {
   }
 }
 
-function displayPlaylist() {
+function displayPlaylistUI() {
   const playlistName = document.getElementById("displayPlaylistName").value;
   const playlistOutput = document.getElementById("playlistOutput");
 
   if (playlistName) {
-    const playlist = playlistManager.findPlaylist(playlistName);
-    if (playlist) {
-      playlistOutput.innerText = playlist.displaySongs();
-    } else {
-      playlistOutput.innerText = `Playlist "${playlistName}" not found.`;
-    }
+    const result = displayPlaylist(playlistName);
+    playlistOutput.innerText = result;
     document.getElementById("displayPlaylistName").value = "";
   } else {
     playlistOutput.innerText = "Playlist name cannot be empty.";
   }
 }
 
-function playSong() {
-  const playlistName = document.getElementById("playSongPlaylistName").value;
-  const nowPlaying = document.getElementById("nowPlaying");
-
-  if (playlistName) {
-    const playlist = playlistManager.findPlaylist(playlistName);
-    if (playlist) {
-      const song = playlist.playNextSong();
-      nowPlaying.innerText = `Now Playing: ${song}`;
+// Search for a song in the playlist
+function searchSongInPlaylist(playlistName, songName) {
+  const playlist = findPlaylist(playlistName);
+  if (playlist) {
+    const sortedSongs = playlist.songs.getSongsInOrder(); // Get sorted songs from the BST
+    if (sortedSongs.includes(songName)) {
+      return `Song "${songName}" found in playlist "${playlistName}".`;
     } else {
-      nowPlaying.innerText = `Playlist "${playlistName}" not found.`;
+      return `Song "${songName}" not found in playlist "${playlistName}".`;
     }
-    document.getElementById("playSongPlaylistName").value = "";
   } else {
-    nowPlaying.innerText = "Playlist name cannot be empty.";
+    return `Playlist "${playlistName}" not found.`;
   }
 }
-function deleteSong() {
-  const playlistName = document.getElementById("deleteSongPlaylistName").value;
-  const songName = document.getElementById("deleteSongName").value;
-  const playlistOutput = document.getElementById("playlistOutput");
+
+// Handle Search Song in Playlist button click
+function searchSongUI() {
+  const playlistName = document.getElementById("searchPlaylistName").value;
+  const songName = document.getElementById("searchSongName").value;
+  const playlistOutput = document.getElementById("searchSongResult");
 
   if (playlistName && songName) {
-    const playlist = playlistManager.findPlaylist(playlistName);
-    if (playlist) {
-      const result = playlist.deleteSong(songName);
-      playlistOutput.innerText = result
-        ? result
-        : `Song "${songName}" removed from playlist "${playlistName}".`;
-    } else {
-      playlistOutput.innerText = `Playlist "${playlistName}" not found.`;
-    }
-    document.getElementById("deleteSongPlaylistName").value = "";
-    document.getElementById("deleteSongName").value = "";
+    const result = searchSongInPlaylist(playlistName, songName);
+    playlistOutput.innerText = result;
+    document.getElementById("searchPlaylistName").value = "";
+    document.getElementById("searchSongName").value = "";
   } else {
     playlistOutput.innerText = "Both playlist name and song name are required.";
   }
 }
-document.getElementById("deleteSongButton").onclick = deleteSong;
-document.getElementById("createPlaylistButton").onclick = createPlaylist;
-document.getElementById("addSongButton").onclick = addSong;
-document.getElementById("displayPlaylistButton").onclick = displayPlaylist;
-document.getElementById("playSongButton").onclick = playSong;
+
+// Attach UI functions to buttons
+document.getElementById("createPlaylistButton").onclick = createPlaylistUI;
+document.getElementById("addSongButton").onclick = addSongUI;
+document.getElementById("displayPlaylistButton").onclick = displayPlaylistUI;
+document.getElementById("sortPlaylistButton").onclick = sortPlaylistUI;
+document.getElementById("searchSongButton").onclick = searchSongUI;
